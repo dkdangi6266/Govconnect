@@ -1,8 +1,11 @@
 const jwt = require("jsonwebtoken");
 
+// Authentication Middleware
+
 const authenticate = (req, res, next) => {
   try {
-    // Authorization header
+
+    // Get Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -12,15 +15,22 @@ const authenticate = (req, res, next) => {
       });
     }
 
-    // Expected:
+    // Expected format:
     // Authorization: Bearer <token>
+
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authorization format"
+      });
+    }
 
     const token = authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Invalid authorization format"
+        message: "Token missing"
       });
     }
 
@@ -30,43 +40,47 @@ const authenticate = (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    // Store user information in request
+    // Store decoded user information
     req.user = decoded;
 
     next();
 
   } catch (error) {
+
     return res.status(401).json({
       success: false,
       message: "Invalid or expired token"
     });
+
   }
 };
 
-module.exports = authenticate;
 
 const authorize = (...allowedRoles) => {
-    return (req, res, next) => {
 
-        if (!req.user) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication required"
-            });
-        }
+  return (req, res, next) => {
 
-        if (!allowedRoles.includes(req.user.role)) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
-        }
+    // User must be authenticated first
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required"
+      });
+    }
 
-        next();
-    };
+    // Check user's role
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied"
+      });
+    }
+
+    next();
+  };
 };
 
 module.exports = {
-    authenticate,
-    authorize
+  authenticate,
+  authorize
 };

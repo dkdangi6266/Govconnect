@@ -19,16 +19,6 @@ router.post("/login", login);
 
 router.get("/me", authenticate, getMe);
 
-router.get(
-    "/admin-test",
-    authenticate,
-    authorize("super_admin"),
-    (req, res) => {
-        res.json({
-            success: true,
-            message: "Welcome Super Admin"
-        });
-    }
-);
+
 
 module.exports = router;
