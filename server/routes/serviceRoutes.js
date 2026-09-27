@@ -4,7 +4,9 @@ const router = express.Router();
 
 const {
   createService,
-  getServices
+  getServices,
+  getServiceById,
+  updateService
 } = require("../controllers/serviceController");
 
 const {
@@ -12,20 +14,34 @@ const {
   authorize
 } = require("../middleware/authMiddleware");
 
-// GET all services
+// Get all services
 router.get(
   "/",
   authenticate,
   getServices
 );
 
-// CREATE service
-// Only Super Admin and Department Admin
+// Get single service
+router.get(
+  "/:id",
+  authenticate,
+  getServiceById
+);
+
+// Create service
 router.post(
   "/",
   authenticate,
   authorize("super_admin", "department_admin"),
   createService
+);
+
+// Update service
+router.patch(
+  "/:id",
+  authenticate,
+  authorize("super_admin", "department_admin"),
+  updateService
 );
 
 module.exports = router;
