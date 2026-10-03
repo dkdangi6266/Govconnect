@@ -6,7 +6,9 @@ const {
   createApplication,
   getMyApplications,
   getApplicationById,
-  updateApplicationStatus
+  updateApplicationStatus,
+  getOfficerApplications,
+  assignApplication
 } = require("../controllers/applicationController");
 
 const {
@@ -27,7 +29,22 @@ router.get(
   authenticate,
   getMyApplications
 );
-
+router.get(
+  "/officer",
+  authenticate,
+  authorize(
+    "government_officer",
+    "department_admin",
+    "super_admin"
+  ),
+  getOfficerApplications
+);
+router.post(
+  "/:id/assign",
+  authenticate,
+  authorize("super_admin", "department_admin"),
+  assignApplication
+);
 // Update application status
 router.patch(
   "/:id/status",

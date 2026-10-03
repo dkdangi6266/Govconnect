@@ -14,6 +14,12 @@ const applicationSchema = new mongoose.Schema(
       required: true
     },
 
+    assignedOfficerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+
     status: {
       type: String,
       enum: [
@@ -41,7 +47,6 @@ const applicationSchema = new mongoose.Schema(
   }
 );
 
-// One citizen → one application for one service
 applicationSchema.index(
   { userId: 1, serviceId: 1 },
   { unique: true }
