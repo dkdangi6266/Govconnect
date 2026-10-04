@@ -1,6 +1,10 @@
 const Application = require("../models/Application");
 const Service = require("../models/Service");
 const User = require("../models/User");
+const AuditLog = require("../models/AuditLog");
+const {
+  createNotification
+} = require("../services/notificationService");
 
 // Create Application
 const createApplication = async (req, res) => {
@@ -181,7 +185,45 @@ const updateApplicationStatus = async (req, res) => {
     application.remarks = remarks || "";
 
     await application.save();
+    await AuditLog.create({
+  userId: req.user.userId,
+  action:
+    status === "APPROVED"
+      ? "APPLICATION_APPROVED"
+      : "APPLICATION_REJECTED",
+  resourceType: "APPLICATION",
+  resourceId: application._id,
+  description:
+    status === "APPROVED"
+      ? "Officer approved the application"
+      : "Officer rejected the application",
+  metadata: {
+    remarks: remarks || "",
+    previousStatus: "OFFICER_REVIEW",
+    newStatus: status
+  }
+});
+await createNotification({
+  userId: application.userId,
+  applicationId: application._id,
 
+  type:
+    status === "APPROVED"
+      ? "APPLICATION_APPROVED"
+      : "APPLICATION_REJECTED",
+
+  title:
+    status === "APPROVED"
+      ? "Application Approved"
+      : "Application Rejected",
+
+  message:
+    status === "APPROVED"
+      ? "Your application has been approved successfully."
+      : `Your application has been rejected. ${
+          remarks || "Please check the application details."
+        }`
+});
     return res.status(200).json({
       success: true,
       message: `Application ${status.toLowerCase()} successfully`,
@@ -197,9 +239,16 @@ const updateApplicationStatus = async (req, res) => {
 };
 const getOfficerApplications = async (req, res) => {
   try {
-    const applications = await Application.find({
+    const filter = {
       status: "OFFICER_REVIEW"
-    })
+    };
+
+    // Government officer can see only assigned applications
+    if (req.user.role === "government_officer") {
+      filter.assignedOfficerId = req.user.userId;
+    }
+
+    const applications = await Application.find(filter)
       .populate("userId", "name email governmentId")
       .populate("serviceId", "name code description")
       .populate("assignedOfficerId", "name email role")

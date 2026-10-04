@@ -2,19 +2,27 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+// ==================== REGISTER ====================
+
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const {
+      name,
+      email,
+      password,
+      governmentId
+    } = req.body;
 
     // 1. Check required fields
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !governmentId) {
       return res.status(400).json({
         success: false,
-        message: "Name, email and password are required"
+        message:
+          "Name, email, password and governmentId are required"
       });
     }
 
-    // 2. Check existing user
+    // 2. Check existing email
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -24,29 +32,46 @@ const register = async (req, res) => {
       });
     }
 
-    // 3. Hash password
+    // 3. Check existing government ID
+    const existingGovernmentId = await User.findOne({
+      governmentId
+    });
+
+    if (existingGovernmentId) {
+      return res.status(409).json({
+        success: false,
+        message: "Government ID already registered"
+      });
+    }
+
+    // 4. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Create user
+    // 5. Create user
     const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      governmentId
     });
 
-    // 5. Send response
-    res.status(201).json({
+    // 6. Send response
+    return res.status(201).json({
       success: true,
       message: "User registered successfully",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        governmentId: user.governmentId,
         role: user.role
       }
     });
+
   } catch (error) {
-    res.status(500).json({
+    console.error("Register error:", error);
+
+    return res.status(500).json({
       success: false,
       message: "Server error",
       error: error.message
@@ -54,9 +79,15 @@ const register = async (req, res) => {
   }
 };
 
+
+// ==================== LOGIN ====================
+
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const {
+      email,
+      password
+    } = req.body;
 
     // 1. Validate input
     if (!email || !password) {
@@ -76,7 +107,7 @@ const login = async (req, res) => {
       });
     }
 
-    // 3. Compare password with hashed password
+    // 3. Compare password
     const isPasswordCorrect = await bcrypt.compare(
       password,
       user.password
@@ -102,7 +133,7 @@ const login = async (req, res) => {
     );
 
     // 5. Send response
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Login successful",
       token,
@@ -110,18 +141,25 @@ const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        governmentId: user.governmentId,
         role: user.role
       }
     });
 
   } catch (error) {
-    res.status(500).json({
+    console.error("Login error:", error);
+
+    return res.status(500).json({
       success: false,
       message: "Server error",
       error: error.message
     });
   }
 };
+
+
+// ==================== GET CURRENT USER ====================
+
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId)
@@ -134,19 +172,23 @@ const getMe = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user
     });
 
   } catch (error) {
-    res.status(500).json({
+    console.error("Get Me error:", error);
+
+    return res.status(500).json({
       success: false,
       message: "Server error",
       error: error.message
     });
   }
 };
+
+
 module.exports = {
   register,
   login,
