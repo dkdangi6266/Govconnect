@@ -14,6 +14,10 @@ const {
   authenticate
 } = require("../middleware/authMiddleware");
 
+const {
+  getApplicationVerifications,
+} = require("../controllers/verificationController");
+
 router.get(
   "/identity/:userId",
   authenticate,
@@ -41,5 +45,10 @@ router.post(
   "/applications/:applicationId/verify",
   authenticate,
   verifyApplication
+);
+router.get(
+  "/applications/:applicationId/verifications",
+  authenticate,
+  getApplicationVerifications
 );
 module.exports = router;
