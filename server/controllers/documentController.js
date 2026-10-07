@@ -135,8 +135,42 @@ const getDocumentById = async (req, res) => {
     });
   }
 };
+const getApplicationDocuments = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const application = await Application.findOne({
+      _id: applicationId,
+      userId: req.user.userId,
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found",
+      });
+    }
+
+    const documents = await Document.find({
+      applicationId,
+      userId: req.user.userId,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: documents.length,
+      documents,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 module.exports = {
   uploadDocument,
-  getDocumentById
+  getDocumentById,
+  getApplicationDocuments,
 };

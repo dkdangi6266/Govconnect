@@ -14,6 +14,23 @@ const residenceService = async (governmentId) => {
       district: "Bhopal",
       residenceType: "Permanent",
       verified: true
+    },
+
+    // Mock citizens created through GovConnect
+    "MOCK-ID001": {
+      userId: "MOCK-ID001",
+      state: "Madhya Pradesh",
+      district: "Indore",
+      residenceType: "Permanent",
+      verified: true
+    },
+
+    "MOCK-ID002": {
+      userId: "MOCK-ID002",
+      state: "Madhya Pradesh",
+      district: "Bhopal",
+      residenceType: "Permanent",
+      verified: true
     }
   };
 

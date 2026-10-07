@@ -3,27 +3,48 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 // ==================== REGISTER ====================
+const generateMockGovernmentId = async () => {
+  const users = await User.find(
+    { governmentId: { $regex: /^MOCK-ID\d+$/ } },
+    { governmentId: 1 }
+  );
 
+  let maxNumber = 0;
+
+  users.forEach((user) => {
+    const match = user.governmentId.match(/^MOCK-ID(\d+)$/);
+
+    if (match) {
+      const number = parseInt(match[1], 10);
+
+      if (number > maxNumber) {
+        maxNumber = number;
+      }
+    }
+  });
+
+  return `MOCK-ID${String(maxNumber + 1).padStart(3, "0")}`;
+};
 const register = async (req, res) => {
   try {
     const {
       name,
       email,
-      password,
-      governmentId
+      password
     } = req.body;
 
     // 1. Check required fields
-    if (!name || !email || !password || !governmentId) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message:
-          "Name, email, password and governmentId are required"
+        message: "Name, email and password are required"
       });
     }
 
     // 2. Check existing email
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      email: email.toLowerCase()
+    });
 
     if (existingUser) {
       return res.status(409).json({
@@ -32,17 +53,8 @@ const register = async (req, res) => {
       });
     }
 
-    // 3. Check existing government ID
-    const existingGovernmentId = await User.findOne({
-      governmentId
-    });
-
-    if (existingGovernmentId) {
-      return res.status(409).json({
-        success: false,
-        message: "Government ID already registered"
-      });
-    }
+    // 3. Generate Government ID automatically
+    const governmentId = await generateMockGovernmentId();
 
     // 4. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -50,9 +62,10 @@ const register = async (req, res) => {
     // 5. Create user
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
-      governmentId
+      governmentId,
+      role: "citizen"
     });
 
     // 6. Send response

@@ -8,9 +8,9 @@ const {
   getApplicationById,
   updateApplicationStatus,
   getOfficerApplications,
-  assignApplication
+  assignApplication,
+  getAllApplications
 } = require("../controllers/applicationController");
-
 const {
   authenticate,
   authorize
@@ -63,5 +63,10 @@ router.get(
   authenticate,
   getApplicationById
 );
-
+router.get(
+  "/",
+  authenticate,
+  authorize("super_admin", "department_admin"),
+  getAllApplications
+);
 module.exports = router;

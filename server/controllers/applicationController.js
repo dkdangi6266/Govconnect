@@ -96,8 +96,9 @@ const getMyApplications = async (req, res) => {
 const getApplicationById = async (req, res) => {
   try {
     const application = await Application.findById(req.params.id)
-      .populate("serviceId", "name code description")
-      .populate("userId", "name email");
+    .populate("serviceId", "name code description departmentId")
+.populate("userId", "name email governmentId")
+.populate("assignedOfficerId", "name email governmentId role")
 
     if (!application) {
       return res.status(404).json({
@@ -324,11 +325,35 @@ const assignApplication = async (req, res) => {
     });
   }
 };
+
+const getAllApplications = async (req, res) => {
+  try {
+    const applications = await Application.find()
+      .populate("serviceId", "name code description departmentId")
+      .populate("userId", "name email governmentId")
+      .populate("assignedOfficerId", "name email governmentId role")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: applications.length,
+      applications,
+    });
+  } catch (error) {
+    console.error("Get all applications error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch applications",
+    });
+  }
+};
 module.exports = {
   createApplication,
   getMyApplications,
   getApplicationById,
   updateApplicationStatus,
   getOfficerApplications,
-  assignApplication
+  assignApplication,
+  getAllApplications
 };

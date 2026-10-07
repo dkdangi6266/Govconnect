@@ -12,6 +12,21 @@ const incomeService = async (governmentId) => {
       annualIncome: 450000,
       incomeYear: "2025-26",
       verified: true
+    },
+
+    // Mock citizen created through GovConnect registration
+    "MOCK-ID001": {
+      userId: "MOCK-ID001",
+      annualIncome: 300000,
+      incomeYear: "2025-26",
+      verified: true
+    },
+
+    "MOCK-ID002": {
+      userId: "MOCK-ID002",
+      annualIncome: 240000,
+      incomeYear: "2025-26",
+      verified: true
     }
   };
 

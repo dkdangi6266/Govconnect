@@ -50,7 +50,29 @@ const createOfficer = async (req, res) => {
     });
   }
 };
+const getOfficers = async (req, res) => {
+  try {
+    const officers = await User.find(
+      { role: "government_officer" },
+      "name email governmentId role"
+    ).sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      count: officers.length,
+      officers,
+    });
+  } catch (error) {
+    console.error("Get officers error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch officers",
+    });
+  }
+};
 
 module.exports = {
-  createOfficer
+  createOfficer,
+  getOfficers
 };

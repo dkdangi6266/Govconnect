@@ -19,12 +19,7 @@ const registerValidator = [
     .notEmpty()
     .withMessage("Password is required")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters"),
-
-  body("governmentId")
-    .trim()
-    .notEmpty()
-    .withMessage("Government ID is required")
+    .withMessage("Password must be at least 6 characters")
 ];
 
 const loginValidator = [

@@ -23,14 +23,27 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 connectDB();
-app.use(helmet());
-app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true
-}));
-app.use(express.json());
 
-app.use("/api/auth", authRoutes);
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ["GET","HEAD","PUT","PATCH","POST","DELETE","OPTIONS", ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+  })
+);
+
+// IMPORTANT
+
+
+// Routes
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/services", serviceRoutes);

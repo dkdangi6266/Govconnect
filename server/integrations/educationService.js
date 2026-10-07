@@ -14,6 +14,23 @@ const educationService = async (governmentId) => {
       institution: "Government College",
       passingYear: 2024,
       verified: true
+    },
+
+    // Mock citizens created through GovConnect
+    "MOCK-ID001": {
+      userId: "MOCK-ID001",
+      qualification: "B.Tech",
+      institution: "Mock Engineering College",
+      passingYear: 2025,
+      verified: true
+    },
+
+    "MOCK-ID002": {
+      userId: "MOCK-ID002",
+      qualification: "B.Sc",
+      institution: "Mock Government College",
+      passingYear: 2024,
+      verified: true
     }
   };
 

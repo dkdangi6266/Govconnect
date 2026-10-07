@@ -32,6 +32,20 @@ const serviceSchema = new mongoose.Schema(
         type: String
       }
     ],
+    requiredVerifications: {
+  type: [
+    {
+      type: String,
+      enum: [
+        "IDENTITY",
+        "INCOME",
+        "EDUCATION",
+        "RESIDENCE",
+      ],
+    },
+  ],
+  default: [],
+},
 
     isActive: {
       type: Boolean,

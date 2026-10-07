@@ -1,10 +1,10 @@
 const express = require("express");
 
 const router = express.Router();
-
 const {
   uploadDocument,
-  getDocumentById
+  getDocumentById,
+  getApplicationDocuments,
 } = require("../controllers/documentController");
 
 const {
@@ -31,9 +31,8 @@ router.post(
   uploadDocument
 );
 router.get(
-  "/:id",
+  "/application/:applicationId",
   authenticate,
-  getDocumentById
+  getApplicationDocuments
 );
-
 module.exports = router;
