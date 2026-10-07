@@ -151,8 +151,16 @@ const ApplicationDetails = () => {
           navigate(`/applications/${application._id}/documents`)
         }
       >
+       
         Manage Documents
       </button>
+       <button
+  onClick={() =>
+    navigate(`/applications/${application._id}/document-list`)
+  }
+>
+  View Documents
+</button>
 
       <button
         onClick={() =>

@@ -2,43 +2,107 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/axios";
 
-const verificationTypes = [
-  {
+const verificationConfig = {
+  IDENTITY: {
     type: "IDENTITY",
     title: "Identity Verification",
   },
-  {
+
+  INCOME: {
     type: "INCOME",
     title: "Income Verification",
   },
-  {
+
+  EDUCATION: {
     type: "EDUCATION",
     title: "Education Verification",
   },
-  {
+
+  RESIDENCE: {
     type: "RESIDENCE",
     title: "Residence Verification",
   },
-];
+};
 
 const VerificationStatus = () => {
   const { id } = useParams();
 
   const [verifications, setVerifications] = useState([]);
+  const [requiredVerifications, setRequiredVerifications] =
+    useState([]);
+
+  const [serviceName, setServiceName] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState("");
   const [error, setError] = useState("");
 
-  const fetchVerifications = async () => {
+  // Load application + service + verification status
+  const fetchData = async () => {
     try {
-      const response = await api.get(
+      setError("");
+
+      // 1. Get application
+      const applicationResponse = await api.get(
+        `/applications/${id}`
+      );
+
+      const application =
+        applicationResponse.data.application;
+
+      if (!application) {
+        throw new Error("Application not found");
+      }
+
+      /*
+        serviceId may already be populated by backend.
+
+        If populated:
+        application.serviceId._id
+
+        If not populated:
+        application.serviceId
+      */
+      const serviceId =
+        application.serviceId?._id ||
+        application.serviceId;
+
+      if (!serviceId) {
+        throw new Error(
+          "Service information not found"
+        );
+      }
+
+      // 2. Get service configuration
+      const serviceResponse = await api.get(
+        `/services/${serviceId}`
+      );
+
+      const service = serviceResponse.data.service;
+
+      setServiceName(service?.name || "");
+
+      setRequiredVerifications(
+        service?.requiredVerifications || []
+      );
+
+      // 3. Get existing verification records
+      const verificationResponse = await api.get(
         `/integrations/applications/${id}/verifications`
       );
 
-      setVerifications(response.data.verifications || []);
+      setVerifications(
+        verificationResponse.data.verifications || []
+      );
     } catch (error) {
+      console.error(
+        "Verification page error:",
+        error
+      );
+
       setError(
         error.response?.data?.message ||
+          error.message ||
           "Unable to load verification status"
       );
     } finally {
@@ -47,12 +111,13 @@ const VerificationStatus = () => {
   };
 
   useEffect(() => {
-    fetchVerifications();
+    fetchData();
   }, [id]);
 
   const getVerification = (type) => {
     return verifications.find(
-      (verification) => verification.dataType === type
+      (verification) =>
+        verification.dataType === type
     );
   };
 
@@ -68,8 +133,14 @@ const VerificationStatus = () => {
         }
       );
 
-      await fetchVerifications();
+      // Refresh complete page data
+      await fetchData();
     } catch (error) {
+      console.error(
+        "Verification error:",
+        error
+      );
+
       setError(
         error.response?.data?.message ||
           "Verification failed"
@@ -80,12 +151,18 @@ const VerificationStatus = () => {
   };
 
   if (loading) {
-    return <p>Loading verification status...</p>;
+    return (
+      <p>Loading verification status...</p>
+    );
   }
 
   return (
     <div>
       <h1>Verification Status</h1>
+
+      {serviceName && (
+        <h2>{serviceName}</h2>
+      )}
 
       <p>
         Application ID: <strong>{id}</strong>
@@ -97,50 +174,78 @@ const VerificationStatus = () => {
         </p>
       )}
 
-      {verificationTypes.map((item) => {
-        const verification = getVerification(item.type);
+      {requiredVerifications.length === 0 ? (
+        <p>
+          No verification requirements configured
+          for this service.
+        </p>
+      ) : (
+        requiredVerifications.map((type) => {
+          const item =
+            verificationConfig[type];
 
-        const status = verification?.status || "PENDING";
+          // Ignore unknown verification type
+          if (!item) {
+            return null;
+          }
 
-        return (
-          <div key={item.type}>
-            <h2>{item.title}</h2>
+          const verification =
+            getVerification(type);
 
-            <p>
-              <strong>Status:</strong> {status}
-            </p>
+          const status =
+            verification?.status || "PENDING";
 
-            {verification?.source && (
+          return (
+            <div key={type}>
+              <h2>{item.title}</h2>
+
               <p>
-                <strong>Source:</strong>{" "}
-                {verification.source}
+                <strong>Status:</strong>{" "}
+                {status}
               </p>
-            )}
 
-            {status === "VERIFIED" ? (
-              <p>✓ Successfully Verified</p>
-            ) : status === "FAILED" ? (
-              <button
-                onClick={() => handleVerify(item.type)}
-                disabled={processing === item.type}
-              >
-                {processing === item.type
-                  ? "Verifying..."
-                  : "Retry Verification"}
-              </button>
-            ) : (
-              <button
-                onClick={() => handleVerify(item.type)}
-                disabled={processing === item.type}
-              >
-                {processing === item.type
-                  ? "Verifying..."
-                  : `Verify ${item.type}`}
-              </button>
-            )}
-          </div>
-        );
-      })}
+              {verification?.source && (
+                <p>
+                  <strong>Source:</strong>{" "}
+                  {verification.source}
+                </p>
+              )}
+
+              {status === "VERIFIED" ? (
+                <p>
+                  ✓ Successfully Verified
+                </p>
+              ) : status === "FAILED" ? (
+                <button
+                  onClick={() =>
+                    handleVerify(type)
+                  }
+                  disabled={
+                    processing === type
+                  }
+                >
+                  {processing === type
+                    ? "Verifying..."
+                    : "Retry Verification"}
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    handleVerify(type)
+                  }
+                  disabled={
+                    processing === type
+                  }
+                >
+                  {processing === type
+                    ? "Verifying..."
+                    : `Verify ${type}`}
+                </button>
+              )}
+            </div>
+          );
+        })
+      )}
     </div>
   );
 };

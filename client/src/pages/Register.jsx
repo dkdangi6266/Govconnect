@@ -9,7 +9,6 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    governmentId: ""
   });
 
   const [error, setError] = useState("");
@@ -19,7 +18,7 @@ const Register = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -33,16 +32,17 @@ const Register = () => {
     try {
       await api.post("/auth/register", formData);
 
-      setSuccess("Registration successful. Please login.");
+      setSuccess(
+        "Registration successful. Please login."
+      );
 
       setTimeout(() => {
         navigate("/login");
       }, 1000);
-
     } catch (error) {
       setError(
         error.response?.data?.message ||
-        "Registration failed"
+          "Registration failed"
       );
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ const Register = () => {
       <h1>GovConnect Registration</h1>
 
       <form onSubmit={handleSubmit}>
-
+        {/* Name */}
         <div>
           <label>Name</label>
 
@@ -68,6 +68,7 @@ const Register = () => {
           />
         </div>
 
+        {/* Email */}
         <div>
           <label>Email</label>
 
@@ -81,6 +82,7 @@ const Register = () => {
           />
         </div>
 
+        {/* Password */}
         <div>
           <label>Password</label>
 
@@ -94,19 +96,6 @@ const Register = () => {
           />
         </div>
 
-        <div>
-          <label>Government ID</label>
-
-          <input
-            type="text"
-            name="governmentId"
-            value={formData.governmentId}
-            onChange={handleChange}
-            placeholder="Enter Government ID"
-            required
-          />
-        </div>
-
         {error && <p>{error}</p>}
 
         {success && <p>{success}</p>}
@@ -115,16 +104,15 @@ const Register = () => {
           type="submit"
           disabled={loading}
         >
-          {loading ? "Registering..." : "Register"}
+          {loading
+            ? "Registering..."
+            : "Register"}
         </button>
-
       </form>
 
       <p>
         Already have an account?{" "}
-        <Link to="/login">
-          Login
-        </Link>
+        <Link to="/login">Login</Link>
       </p>
     </div>
   );

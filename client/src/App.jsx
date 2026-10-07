@@ -10,6 +10,13 @@ import MyApplications from "./pages/MyApplications";
 import ApplicationDetails from "./pages/ApplicationDetails";
 import Consent from "./pages/Consent";
 import VerificationStatus from "./pages/VerificationStatus";
+import DocumentUpload from "./pages/DocumentUpload";
+import DocumentList from "./pages/DocumentList";
+import Notifications from "./pages/Notifications";
+import OfficerDashboard from "./pages/OfficerDashboard";
+import OfficerApplicationReview from "./pages/OfficerApplicationReview";
+import AdminApplications from "./pages/AdminApplications";
+
 
 function App() {
   return (
@@ -50,6 +57,30 @@ function App() {
 <Route
   path="/applications/:id/verification"
   element={<VerificationStatus />}
+/>
+<Route
+  path="/applications/:id/documents"
+  element={<DocumentUpload />}
+/>
+<Route
+  path="/applications/:id/document-list"
+  element={<DocumentList />}
+/>
+<Route
+  path="/notifications"
+  element={<Notifications />}
+/>
+<Route
+  path="/officer/dashboard"
+  element={<OfficerDashboard />}
+/>
+<Route
+  path="/officer/applications/:id"
+  element={<OfficerApplicationReview />}
+/>
+<Route
+  path="/admin/applications"
+  element={<AdminApplications />}
 />
 </Route>
 </Routes>
